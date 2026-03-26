@@ -25,12 +25,21 @@ fi
 
 echo ""
 echo -e "${YELLOW}[2/4] Installing AUR packages...${NC}"
-if command -v yay &> /dev/null; then
-    echo "yay found, you may need to manually install AUR packages"
-elif command -v paru &> /dev/null; then
-    echo "paru found, you may need to manually install AUR packages"
+if [ -f aur-packages.txt ]; then
+    if command -v yay &> /dev/null; then
+        yay -S --needed - < aur-packages.txt
+    elif command -v paru &> /dev/null; then
+        paru -S --needed - < aur-packages.txt
+    else
+        echo -e "${YELLOW}Installing base-devel first...${NC}"
+        pacman -S --needed base-devel git
+        echo -e "${YELLOW}Installing yay...${NC}"
+        cd /tmp && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+        yay -S --needed - < aur-packages.txt
+    fi
+    echo -e "${GREEN}AUR packages installed${NC}"
 else
-    echo "No AUR helper found, skipping AUR packages"
+    echo -e "${YELLOW}aur-packages.txt not found, skipping${NC}"
 fi
 
 echo ""
